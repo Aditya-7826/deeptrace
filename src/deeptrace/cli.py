@@ -28,6 +28,29 @@ def _cmd_prepare(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_train(args: argparse.Namespace) -> int:
+    from deeptrace.train.config import TrainConfig
+    from deeptrace.train.loop import Trainer
+
+    raw = load_yaml(args.config)
+    if args.data_root:
+        raw.setdefault("data", {})["root"] = args.data_root
+    if args.output_root:
+        raw["output_root"] = args.output_root
+    if args.num_workers is not None:
+        raw.setdefault("data", {})["num_workers"] = args.num_workers
+    for key in ("batch_size", "device", "time_budget_hours", "epochs"):
+        value = getattr(args, key)
+        if value is not None:
+            raw.setdefault("train", {})[key] = value
+    cfg = TrainConfig.from_dict(raw)
+    run_dir = Path(cfg.output_root) / cfg.run_name
+    setup_logging(log_file=run_dir / "train.log")
+    summary = Trainer(cfg, resume=args.resume).fit()
+    print(json.dumps(summary, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="deeptrace", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -39,6 +62,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", help="cpu, cuda or auto")
     p.add_argument("--limit", type=int, help="process at most N new source files this run")
     p.set_defaults(func=_cmd_prepare)
+
+    t = sub.add_parser("train", help="fine-tune a model from a YAML config")
+    t.add_argument("--config", required=True, type=Path)
+    t.add_argument("--resume", action="store_true", help="continue from <run>/last.pt")
+    t.add_argument("--data-root", help="folder containing manifest.csv")
+    t.add_argument("--output-root", help="where run folders are written")
+    t.add_argument("--batch-size", type=int)
+    t.add_argument("--num-workers", type=int, help="DataLoader workers (keep <= 2 locally)")
+    t.add_argument("--epochs", type=int)
+    t.add_argument("--device", help="cpu, cuda or auto")
+    t.add_argument("--time-budget-hours", type=float, help="stop cleanly before this limit")
+    t.set_defaults(func=_cmd_train)
     return parser
 
 

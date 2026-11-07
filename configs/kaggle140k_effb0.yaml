@@ -1,0 +1,31 @@
+# Pipeline proof on the public Kaggle 140k set (StyleGAN fakes) before FF++ access arrives.
+# On Kaggle, pass --data-root /kaggle/input/<your-private-crops-dataset>
+run_name: effb0_kaggle140k
+output_root: artifacts/runs
+data:
+  root: data/crops/kaggle140k
+  datasets: [kaggle140k]
+  balance: sampler
+  num_workers: 2
+model:
+  name: efficientnet_b0
+  arch: timm
+  pretrained: true
+  drop_rate: 0.2
+augment: true
+train:
+  epochs: 8
+  batch_size: 64
+  lr: 1.0e-3                # head; backbone gets lr * backbone_lr_mult in stage 2
+  backbone_lr_mult: 0.2
+  weight_decay: 0.05
+  warmup_epochs: 1
+  freeze_epochs: 1
+  label_smoothing: 0.05
+  grad_clip: 1.0
+  amp: true
+  early_stopping_patience: 3
+  seed: 42
+  threads: 4
+  device: auto
+  time_budget_hours: 11.0   # Kaggle sessions end at 12 h

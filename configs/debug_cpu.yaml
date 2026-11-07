@@ -1,0 +1,26 @@
+# Local CPU smoke test: 1 epoch, 200 images, num_workers 2, 4 threads.
+# Data: uv run python scripts/make_debug_data.py --out data/crops/debug --n 200
+# (or point data.root at real crops; max_train/max_val keep it to 200 images total)
+run_name: debug_cpu
+output_root: artifacts/runs
+data:
+  root: data/crops/debug
+  max_train: 140
+  max_val: 60
+  balance: sampler
+  num_workers: 2
+model:
+  name: efficientnet_b0
+  arch: timm
+  pretrained: true
+augment: true
+train:
+  epochs: 1
+  batch_size: 16
+  lr: 1.0e-3
+  backbone_lr_mult: 0.2
+  warmup_epochs: 0.2
+  freeze_epochs: 0          # full fine-tune: the heaviest path, so the timing is an upper bound
+  amp: false
+  threads: 4
+  device: cpu

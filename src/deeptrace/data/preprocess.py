@@ -84,3 +84,18 @@ def extract_crops(
             pixels, pad = crop_face(rgb, face, settings.margin, settings.size)
         crops.append(FaceCrop(face, encode_jpeg(pixels, settings.jpeg_quality), pad))
     return crops, None
+
+
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
+
+
+def to_model_input(
+    rgb: np.ndarray,
+    mean: tuple[float, float, float] = IMAGENET_MEAN,
+    std: tuple[float, float, float] = IMAGENET_STD,
+) -> np.ndarray:
+    """HxWx3 uint8 RGB -> 3xHxW float32, normalized. Used by training AND serving."""
+    x = rgb.astype(np.float32) / 255.0
+    x = (x - np.asarray(mean, dtype=np.float32)) / np.asarray(std, dtype=np.float32)
+    return np.ascontiguousarray(x.transpose(2, 0, 1))
