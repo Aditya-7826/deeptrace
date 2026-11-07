@@ -76,8 +76,49 @@ def sh(*cmd):
     print("$", " ".join(cmd))
     subprocess.run(cmd, check=True)
 
+
+# Kaggle mounts inputs at /kaggle/input/<name> or deeper
+# (e.g. /kaggle/input/datasets/<owner>/<name>). If a path from cell 1 doesn't exist,
+# look for a folder with the same name up to 3 levels down.
+INPUT_ROOT = "/kaggle/input"
+
+
+def find_input(path, what, required=True):
+    if os.path.exists(path):
+        return path
+    name = os.path.basename(path.rstrip("/"))
+    for depth in range(4):
+        hits = sorted(glob.glob(INPUT_ROOT + "/" + "*/" * depth + name))
+        if hits:
+            print(f"{what}: {path} not found, using {hits[0]}")
+            return hits[0]
+    if required:
+        raise FileNotFoundError(
+            f"{what} not found: attach it with Add Input "
+            f"(no folder named {name!r} under {INPUT_ROOT})"
+        )
+    return None
+
+
+def find_run_output(path, run_name, filename, what):
+    # Notebook outputs are mounted under the notebook's own slug: search for <run_name>/<filename>.
+    if os.path.exists(os.path.join(path, run_name, filename)):
+        return path
+    for depth in range(5):
+        hits = sorted(glob.glob(INPUT_ROOT + "/" + "*/" * depth + f"{run_name}/{filename}"))
+        if hits:
+            found = os.path.dirname(os.path.dirname(hits[0]))
+            print(f"{what}: {path} not found, using {found}")
+            return found
+    raise FileNotFoundError(
+        f"{what}: no {run_name}/{filename} under {INPUT_ROOT}; attach the earlier version's "
+        "output (Add Input -> Your Work -> Notebook Output)"
+    )
+
+
 WORK = "/kaggle/working/deeptrace_src"
-wheels = glob.glob(f"{BUNDLE}/**/*.whl", recursive=True)
+bundle = find_input(BUNDLE, "code bundle", required=False)
+wheels = glob.glob(f"{bundle}/**/*.whl", recursive=True) if bundle else []
 if wheels:
     sh(sys.executable, "-m", "pip", "install", "-q", "--no-deps", wheels[0])
     bundle_root = os.path.dirname(wheels[0])
@@ -133,8 +174,9 @@ print("model:", model_name, "| batch size:", BATCH, "(halved automatically once 
     ),
     code("""
 if MODE == "prepare":
+    raw = find_input(os.path.join(RAW_ROOT, "140k-real-and-fake-faces"), "140k Real and Fake Faces dataset")
     sh(sys.executable, "-m", "deeptrace", "prepare", "--config", "configs/prepare_kaggle140k.yaml",
-       "--raw-root", RAW_ROOT, "--output-dir", "/kaggle/working/crops", "--device", "cuda")
+       "--raw-root", os.path.dirname(raw), "--output-dir", "/kaggle/working/crops", "--device", "cuda")
     print(open("/kaggle/working/crops/prepare_report.json").read()[:3000])
 else:
     print("MODE is", MODE, "- skipping prepare")
@@ -143,8 +185,7 @@ else:
     code("""
 run_name = cfg["run_name"]
 if MODE == "train" and RESUME:
-    src = os.path.join(PREVIOUS_OUTPUT, run_name)
-    assert os.path.exists(os.path.join(src, "last.pt")), f"no last.pt in {src}"
+    src = os.path.join(find_run_output(PREVIOUS_OUTPUT, run_name, "last.pt", "previous output"), run_name)
     shutil.copytree(src, os.path.join(OUT, run_name), dirs_exist_ok=True)
     print("restored", src, "->", os.path.join(OUT, run_name))
 else:
@@ -153,7 +194,7 @@ else:
     md("## 6. Train"),
     code("""
 if MODE == "train":
-    manifests = glob.glob(f"{CROPS}/**/manifest.csv", recursive=True)
+    manifests = glob.glob(f"{find_input(CROPS, 'crops dataset')}/**/manifest.csv", recursive=True)
     assert manifests, f"manifest.csv not found under {CROPS}: attach your private crops dataset"
     data_root = os.path.dirname(manifests[0])
     cmd = [sys.executable, "-m", "deeptrace", "train", "--config", CONFIG,
@@ -185,13 +226,12 @@ if MODE == "train":
     code("""
 if MODE == "evaluate":
     def manifest_root(folder):
-        found = glob.glob(f"{folder}/**/manifest.csv", recursive=True)
+        found = glob.glob(f"{find_input(folder, 'crops dataset')}/**/manifest.csv", recursive=True)
         assert found, f"manifest.csv not found under {folder}"
         return os.path.dirname(found[0])
 
     data_root = manifest_root(CROPS)
-    run_src = os.path.join(TRAINED_OUTPUT, run_name)
-    assert os.path.exists(os.path.join(run_src, "best.pt")), f"no best.pt in {run_src}"
+    run_src = os.path.join(find_run_output(TRAINED_OUTPUT, run_name, "best.pt", "trained output"), run_name)
     run_dir = os.path.join("/kaggle/working/runs", run_name)
     shutil.copytree(run_src, run_dir, dirs_exist_ok=True)
     results = os.path.join(OUT, "results")

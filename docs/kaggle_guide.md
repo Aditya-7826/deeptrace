@@ -49,6 +49,9 @@ receives the outputs.
 3. Set **Session options → Internet → On**. Pretrained ImageNet weights download
    from the Hugging Face Hub.
 4. Click **Add Input** and add `deeptrace-bundle`, plus the data listed for the run below.
+   You don't need to fix the paths in cell 1 if Kaggle mounts an input somewhere else
+   (for example `/kaggle/input/datasets/<owner>/<name>`). The notebook looks the folder up
+   by name and prints the path it used.
 
 ## 2. Run in the background ("Save & Run All")
 
