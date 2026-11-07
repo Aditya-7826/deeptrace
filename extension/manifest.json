@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "DeepTrace",
+  "version": "1.0.0",
+  "description": "Check faces on a page for signs of deepfakes with your local DeepTrace API. Nothing is scanned until you click.",
+  "minimum_chrome_version": "116",
+  "action": {
+    "default_title": "DeepTrace: Scan this page",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self'; connect-src http: https: data:"
+  }
+}

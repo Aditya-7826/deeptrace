@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeepTrace heatmap</title>
+  <link rel="stylesheet" href="page.css">
+</head>
+<body>
+  <main>
+    <h1>DeepTrace heatmap</h1>
+    <p id="verdict" class="verdict"></p>
+    <p id="missing" hidden>This heatmap is no longer available. Click the badge on the page again.</p>
+    <section id="views" hidden>
+      <figure>
+        <img id="crop" alt="Grad-CAM heatmap over the face crop">
+        <figcaption>Face crop (what the model saw)</figcaption>
+      </figure>
+      <figure>
+        <img id="image" alt="Grad-CAM heatmap over the whole image">
+        <figcaption>Whole image</figcaption>
+      </figure>
+    </section>
+    <p class="note" id="target"></p>
+    <p class="note">Red areas influenced the prediction most. A heatmap shows where the model
+      looked, not proof that a region was edited.</p>
+    <p class="note" id="disclaimer"></p>
+    <p class="note small" id="source"></p>
+  </main>
+  <script src="heatmap.js"></script>
+</body>
+</html>
