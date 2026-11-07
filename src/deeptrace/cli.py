@@ -169,6 +169,31 @@ def _cmd_download(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_serve(args: argparse.Namespace) -> int:
+    from deeptrace.serve.engine import MissingWeightsError, check_weights
+    from deeptrace.serve.settings import Settings
+
+    setup_logging()
+    settings = Settings()
+    if args.weights_dir:
+        settings.weights_dir = Path(args.weights_dir)
+    if args.threads:
+        settings.threads = args.threads
+    try:
+        check_weights(settings.weights_dir, settings.verify_checksums)
+    except MissingWeightsError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    import uvicorn
+
+    from deeptrace.serve.app import create_app
+
+    app = create_app(settings)
+    uvicorn.run(app, host=args.host, port=args.port, workers=1, timeout_keep_alive=5,
+                limit_concurrency=64, log_level="info")  # fmt: skip
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="deeptrace", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -261,6 +286,13 @@ def build_parser() -> argparse.ArgumentParser:
     d.add_argument("--base-url", help="override the GitHub release URL (mirrors, testing)")
     d.add_argument("--force", action="store_true", help="re-download even if present")
     d.set_defaults(func=_cmd_download)
+
+    s = sub.add_parser("serve", help="start the API (one uvicorn worker)")
+    s.add_argument("--host", default="127.0.0.1")
+    s.add_argument("--port", type=int, default=8000)
+    s.add_argument("--weights-dir", help="default: ./weights or $DEEPTRACE_WEIGHTS_DIR")
+    s.add_argument("--threads", type=int, help="CPU threads for ONNX Runtime and PyTorch (2)")
+    s.set_defaults(func=_cmd_serve)
     return parser
 
 

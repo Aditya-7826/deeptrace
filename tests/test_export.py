@@ -20,7 +20,6 @@ from deeptrace.export.download import (
 )
 from deeptrace.export.onnx_export import export_onnx, onnx_logits, ort_session, parity
 from deeptrace.export.quantize import Attempt, choose, sensitive_nodes
-from deeptrace.export.run import ExportOptions, run_export
 from deeptrace.models.factory import ModelConfig, create_model
 from tests.conftest import IMAGES
 
@@ -65,18 +64,6 @@ def test_int8_gate_picks_first_within_budget():
     assert choose(a).name == "b" and a[1].accepted and not a[2].accepted
     assert choose([Attempt("x", False, "none", auc_drop=0.02)]) is None
     assert choose([Attempt("y", False, "none", error="boom")]) is None
-
-
-@pytest.fixture(scope="module")
-def exported(trained_run, debug_data, tmp_path_factory):
-    results = tmp_path_factory.mktemp("results")
-    calib = {"calibration": {"temperature": 1.7, "threshold": 0.42, "uncertain_band": [0.4, 0.6]}}
-    (results / "tiny").mkdir()
-    (results / "tiny" / "metrics.json").write_text(json.dumps(calib), encoding="utf-8")
-    out = tmp_path_factory.mktemp("export")
-    report = run_export(ExportOptions(run_dir=trained_run, data_root=debug_data, out_dir=out,
-                                      results_dir=results, threads=2, calib_n=12))  # fmt: skip
-    return out, results, report
 
 
 def test_export_outputs_and_gate(exported):

@@ -84,3 +84,20 @@ def trained_run(debug_data, tmp_path_factory):
     out = tmp_path_factory.mktemp("evalrun")
     Trainer(tiny_cfg(debug_data, out, epochs=1, freeze_epochs=0)).fit()
     return out / "tiny"
+
+
+@pytest.fixture(scope="session")
+def exported(trained_run, debug_data, tmp_path_factory):
+    """run_export on the tiny model; returns (export_dir, results_dir, report)."""
+    import json
+
+    from deeptrace.export.run import ExportOptions, run_export
+
+    results = tmp_path_factory.mktemp("results")
+    calib = {"calibration": {"temperature": 1.7, "threshold": 0.42, "uncertain_band": [0.4, 0.6]}}
+    (results / "tiny").mkdir()
+    (results / "tiny" / "metrics.json").write_text(json.dumps(calib), encoding="utf-8")
+    out = tmp_path_factory.mktemp("export")
+    report = run_export(ExportOptions(run_dir=trained_run, data_root=debug_data, out_dir=out,
+                                      results_dir=results, threads=2, calib_n=12))  # fmt: skip
+    return out, results, report

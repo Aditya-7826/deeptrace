@@ -1,0 +1,13 @@
+# Optional: everything also runs without Docker (`deeptrace serve`).
+# Download weights on the host first: uv run python -m deeptrace download-weights
+services:
+  api:
+    build: .
+    image: deeptrace-api:local
+    ports:
+      - "127.0.0.1:8000:8000" # reachable from this machine only
+    volumes:
+      - ./weights:/app/weights:ro
+    mem_limit: 2g
+    memswap_limit: 2g
+    restart: unless-stopped
