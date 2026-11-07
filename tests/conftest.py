@@ -53,3 +53,23 @@ def prepared(tmp_path_factory):
     report = run_prepare(cfg)
     yield out, cfg, report
     shutil.rmtree(out, ignore_errors=True)
+
+
+@pytest.fixture(scope="session")
+def debug_data(tmp_path_factory):
+    """Synthetic crops: 40 train/val + 20 test + 20 cross-dataset ("debugx") test."""
+    import importlib.util
+    import sys
+
+    script = Path(__file__).resolve().parents[1] / "scripts" / "make_debug_data.py"
+    spec = importlib.util.spec_from_file_location("make_debug_data", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    out = tmp_path_factory.mktemp("debugdata")
+    argv = sys.argv
+    sys.argv = ["x", "--out", str(out), "--n", "40", "--n-test", "20", "--n-cross", "20"]
+    try:
+        mod.main()
+    finally:
+        sys.argv = argv
+    return out

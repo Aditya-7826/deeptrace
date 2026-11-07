@@ -126,6 +126,29 @@ after every epoch, so a crash loses at most one epoch.
 **Total: roughly 5–10 GPU hours**, which fits within one week's quota. Set `CROPS` in cell 1
 to the dataset you attached.
 
+### Evaluating a finished run (`MODE="evaluate"`, about 0.2–0.4 GPU h each, estimated)
+
+1. Attach the bundle, the same crops dataset and the finished training version's
+   output (**Add Input → Your Work → Notebook Output**).
+2. In cell 1, set `MODE = "evaluate"`, `CONFIG` to the run's config,
+   `TRAINED_OUTPUT` to that output's `outputs` folder, and, for cross-dataset tests
+   from another crops dataset, `EXTRA_TEST_CROPS = ["/kaggle/input/<other-crops>"]`.
+   Celeb-DF is already in `deeptrace-crops-ffpp` as a test-only set.
+3. **Save & Run All.** Then download `outputs/results/<run_name>/` into the repo's
+   `results/<run_name>/`.
+
+You can also evaluate on the laptop if the crops are local. Use PowerShell or bash,
+one line each:
+
+```
+uv run python -m deeptrace evaluate --run artifacts/runs/effb0_main --data-root data/crops/ffpp_celebdf
+uv run python -m deeptrace explain --run artifacts/runs/effb0_main --data-root data/crops/ffpp_celebdf
+uv run python -m deeptrace compare
+```
+
+On CPU, `evaluate` caps the robustness curves at 2000 test crops by default
+(`--robustness-max 0` uses all of them). That number is recorded in `metrics.json`.
+
 ### Step 3: FF++ and Celeb-DF on your laptop (CPU, resumable)
 
 FF++ and Celeb-DF are only available by access request, and must never be

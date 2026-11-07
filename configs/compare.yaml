@@ -1,0 +1,16 @@
+# Which runs go in which table (`deeptrace compare`). Run names match configs/*.yaml.
+comparison:
+  title: Architecture comparison (FaceForensics++ c23)
+  runs:
+    effb0_main: EfficientNet-B0
+    resnet50_cmp: ResNet-50
+    vits_cmp: ViT-Small/16
+    rgb_fft: EfficientNet-B0 + FFT branch
+ablations:
+  title: Ablations (EfficientNet-B0)
+  baseline: effb0_main
+  runs:
+    effb0_main: Full model
+    abl_noaug: No augmentation
+    abl_frozen: Frozen backbone
+    abl_fullframe: No face cropping

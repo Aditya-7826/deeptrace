@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import importlib.util
 from pathlib import Path
 
 import pytest
@@ -22,23 +21,6 @@ from deeptrace.train.loop import Trainer, WarmupCosine
 from deeptrace.train.oom import is_cuda_oom, run_with_oom_fallback
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-@pytest.fixture(scope="module")
-def debug_data(tmp_path_factory):
-    spec = importlib.util.spec_from_file_location("mdd", ROOT / "scripts" / "make_debug_data.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    out = tmp_path_factory.mktemp("debugdata")
-    import sys
-
-    argv = sys.argv
-    sys.argv = ["x", "--out", str(out), "--n", "40"]
-    try:
-        mod.main()
-    finally:
-        sys.argv = argv
-    return out
 
 
 def tiny_cfg(data_root: Path, out_root: Path, **train) -> TrainConfig:
