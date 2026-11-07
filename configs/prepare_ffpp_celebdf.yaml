@@ -1,0 +1,33 @@
+# FaceForensics++ (c23) for train/val/test + Celeb-DF v2 as a test-only set.
+# These datasets need access requests and must never be redistributed.
+raw_root: data/raw
+output_dir: data/crops/ffpp_celebdf
+datasets:
+  - name: ffpp
+    type: ffpp
+    root: FaceForensics++
+    options:
+      compression: c23
+      methods: [Deepfakes, Face2Face, FaceSwap, NeuralTextures]
+      # Official FF++ split JSONs (train.json/val.json/test.json). If omitted,
+      # videos are split by connected identity groups with split_fractions.
+      splits_dir: null
+  - name: celebdf
+    type: celebdf
+    root: Celeb-DF-v2
+    options:
+      # The official 518-video test list; null uses every video.
+      test_list: null
+frames_per_video: 15
+crop:
+  margin: 1.3
+  size: 224
+  jpeg_quality: 95
+  min_confidence: 0.90
+  min_face_px: 64
+  mode: face
+split_fractions: [0.72, 0.14, 0.14]   # FF++ official proportions (720/140/140)
+seed: 42
+near_dup_distance: 4
+device: auto
+threads: 2

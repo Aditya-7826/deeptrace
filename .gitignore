@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+.env.*
+kaggle.json
+
+# Data and large artifacts (FF++ / Celeb-DF must never be redistributed)
+/data/
+/datasets/
+/crops/
+/artifacts/
+/outputs/
+*.zip
+*.pt
+*.pth
+*.onnx
+*.ckpt
+wandb/
+
+# Tools
+.claude/
+.vscode/
+.idea/
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
