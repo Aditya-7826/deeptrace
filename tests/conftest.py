@@ -73,3 +73,14 @@ def debug_data(tmp_path_factory):
     finally:
         sys.argv = argv
     return out
+
+
+@pytest.fixture(scope="session")
+def trained_run(debug_data, tmp_path_factory):
+    """A tiny model trained for one epoch on the synthetic crops (run folder with best.pt)."""
+    from deeptrace.train.loop import Trainer
+    from tests.test_train import tiny_cfg
+
+    out = tmp_path_factory.mktemp("evalrun")
+    Trainer(tiny_cfg(debug_data, out, epochs=1, freeze_epochs=0)).fit()
+    return out / "tiny"

@@ -123,6 +123,52 @@ def _cmd_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_export(args: argparse.Namespace) -> int:
+    from deeptrace.export.run import ExportOptions, run_export
+
+    run_dir = Path(args.run)
+    out = Path(args.out or Path("artifacts/export") / run_dir.name)
+    setup_logging(log_file=out / "export.log")
+    report = run_export(
+        ExportOptions(
+            run_dir=run_dir,
+            data_root=Path(args.data_root),
+            out_dir=out,
+            results_dir=Path(args.results),
+            threads=args.threads,
+            max_test=args.max_test or None,
+            parity_tol=args.parity_tol,
+        )
+    )
+    print(json.dumps({k: report[k] for k in ("parity", "test_set", "serving_model", "decision")},
+                     indent=2))  # fmt: skip
+    return 0
+
+
+def _cmd_benchmark(args: argparse.Namespace) -> int:
+    from deeptrace.export.benchmark import run_benchmark
+
+    report = run_benchmark(Path(args.export_dir), Path(args.image), Path(args.out), args.runs,
+                           args.warmup, args.threads)  # fmt: skip
+    print(f"system: {report['system']}")
+    print(f"wrote {args.out}")
+    return 0
+
+
+def _cmd_download(args: argparse.Namespace) -> int:
+    from deeptrace.export.download import DownloadError, default_dest, download_weights
+
+    dest = Path(args.dest) if args.dest else default_dest()
+    try:
+        for row in download_weights(dest, args.base_url, force=args.force):
+            print(f"{row['name']}: {row['status']}")
+    except DownloadError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    print(f"weights ready in {dest.resolve()}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="deeptrace", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -185,6 +231,36 @@ def build_parser() -> argparse.ArgumentParser:
     x.add_argument("--device", default="auto")
     x.add_argument("--threads", type=int, default=4)
     x.set_defaults(func=_cmd_explain)
+
+    ex = sub.add_parser("export", help="ONNX FP32 export + parity, INT8 quantization with gate")
+    ex.add_argument("--run", required=True, help="run folder with best.pt")
+    ex.add_argument("--data-root", required=True, help="manifest folder (val + test crops)")
+    ex.add_argument("--out", help="default: artifacts/export/<run name>")
+    ex.add_argument("--results", default="results")
+    ex.add_argument("--threads", type=int, default=4)
+    ex.add_argument("--max-test", type=int, default=0, help="test crops for INT8 check; 0 = all")
+    ex.add_argument(
+        "--parity-tol",
+        type=float,
+        default=1e-4,
+        help="max |PyTorch - ONNX| logit difference (default 1e-4; recorded)",
+    )
+    ex.set_defaults(func=_cmd_export)
+
+    b = sub.add_parser("benchmark", help="batch-1 CPU latency + peak RSS -> benchmark.json")
+    b.add_argument("--export-dir", required=True, help="artifacts/export/<run> or weights/")
+    b.add_argument("--image", default="tests/fixtures/images/real/aldrin.jpg")
+    b.add_argument("--out", default="results/benchmark.json")
+    b.add_argument("--runs", type=int, default=200)
+    b.add_argument("--warmup", type=int, default=20)
+    b.add_argument("--threads", type=int, default=4)
+    b.set_defaults(func=_cmd_benchmark)
+
+    d = sub.add_parser("download-weights", help="fetch release weights, verify SHA-256")
+    d.add_argument("--dest", help="default: ./weights or $DEEPTRACE_WEIGHTS_DIR")
+    d.add_argument("--base-url", help="override the GitHub release URL (mirrors, testing)")
+    d.add_argument("--force", action="store_true", help="re-download even if present")
+    d.set_defaults(func=_cmd_download)
     return parser
 
 

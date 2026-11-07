@@ -24,8 +24,6 @@ from deeptrace.eval.metrics import (
     uncertain_rate,
 )
 from deeptrace.eval.robustness import PERTURBATIONS, Perturb
-from deeptrace.train.loop import Trainer
-from tests.test_train import tiny_cfg
 
 # --------------------------------------------------------------- metric functions
 
@@ -106,13 +104,6 @@ def test_compare_marks_missing_runs():
 
 
 # --------------------------------------------------------------- full evaluate
-
-
-@pytest.fixture(scope="module")
-def trained_run(debug_data, tmp_path_factory):
-    out = tmp_path_factory.mktemp("evalrun")
-    Trainer(tiny_cfg(debug_data, out, epochs=1, freeze_epochs=0)).fit()
-    return out / "tiny"
 
 
 def _opts(run_dir, roots, out):
