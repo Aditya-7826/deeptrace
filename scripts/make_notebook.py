@@ -2,6 +2,7 @@
 """Generate notebooks/train_kaggle.ipynb (the notebook's source of truth).
 
 uv run python scripts/make_notebook.py notebooks/train_kaggle.ipynb
+uv run ruff format notebooks
 """
 
 import json
