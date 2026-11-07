@@ -50,6 +50,8 @@ def near_duplicate_pairs(hashes: Sequence[int], max_distance: int = 4) -> Iterat
             for a in range(len(members)):
                 for b in range(a + 1, len(members)):
                     pair = (members[a], members[b])
-                    if pair not in seen and hamming(hashes[pair[0]], hashes[pair[1]]) <= max_distance:
+                    if pair in seen:
+                        continue
+                    if hamming(hashes[pair[0]], hashes[pair[1]]) <= max_distance:
                         seen.add(pair)
                         yield pair

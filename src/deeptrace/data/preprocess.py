@@ -64,11 +64,14 @@ def standardize(rgb_crop: np.ndarray, quality: int = JPEG_QUALITY) -> np.ndarray
 def extract_crops(
     rgb: np.ndarray,
     detector: FaceDetector,
-    settings: CropSettings = CropSettings(),
+    settings: CropSettings | None = None,
     largest_only: bool = True,
 ) -> tuple[list[FaceCrop], str | None]:
     """Detect faces and return standardized crops (largest first) or a skip reason."""
-    faces, reason = filter_faces(detector.detect(rgb), settings.min_confidence, settings.min_face_px)
+    settings = settings or CropSettings()
+    faces, reason = filter_faces(
+        detector.detect(rgb), settings.min_confidence, settings.min_face_px
+    )
     if not faces:
         return [], reason
     if largest_only:

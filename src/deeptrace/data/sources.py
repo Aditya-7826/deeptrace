@@ -99,17 +99,34 @@ def ffpp(
     for path in _files(orig_dir, VIDEO_EXTS) if orig_dir.exists() else []:
         vid = path.stem
         items.append(
-            SourceItem(path, path.relative_to(root).as_posix(), "video", "real", name, "original",
-                       f"{name}:original/{vid}", (f"{name}:{vid}",), fixed([vid]))
+            SourceItem(
+                path,
+                path.relative_to(root).as_posix(),
+                "video",
+                "real",
+                name,
+                "original",
+                f"{name}:original/{vid}",
+                (f"{name}:{vid}",),
+                fixed([vid]),
+            )
         )
     for method in methods:
         mdir = root / "manipulated_sequences" / method / compression / "videos"
         for path in _files(mdir, VIDEO_EXTS) if mdir.exists() else []:
             ids = path.stem.split("_")
             items.append(
-                SourceItem(path, path.relative_to(root).as_posix(), "video", "fake", name, method,
-                           f"{name}:{method}/{path.stem}",
-                           tuple(f"{name}:{i}" for i in ids), fixed(ids))
+                SourceItem(
+                    path,
+                    path.relative_to(root).as_posix(),
+                    "video",
+                    "fake",
+                    name,
+                    method,
+                    f"{name}:{method}/{path.stem}",
+                    tuple(f"{name}:{i}" for i in ids),
+                    fixed(ids),
+                )
             )
     return items
 
@@ -127,7 +144,8 @@ def celebdf(root: Path, name: str = "celebdf", test_list: Path | None = None) ->
             if line.strip()
         }
     items = []
-    for folder, label in (("Celeb-real", "real"), ("YouTube-real", "real"), ("Celeb-synthesis", "fake")):
+    folders = (("Celeb-real", "real"), ("YouTube-real", "real"), ("Celeb-synthesis", "fake"))
+    for folder, label in folders:
         fdir = root / folder
         for path in _files(fdir, VIDEO_EXTS) if fdir.exists() else []:
             rel = path.relative_to(root).as_posix()
@@ -142,8 +160,9 @@ def celebdf(root: Path, name: str = "celebdf", test_list: Path | None = None) ->
                 ids = (f"{name}:yt{stem}",)
             method = "celebdf_synthesis" if label == "fake" else "real"
             items.append(
-                SourceItem(path, rel, "video", label, name, method, f"{name}:{folder}/{stem}", ids,
-                           "test")
+                SourceItem(
+                    path, rel, "video", label, name, method, f"{name}:{folder}/{stem}", ids, "test"
+                )
             )
     return items
 

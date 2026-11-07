@@ -48,7 +48,8 @@ class FaceDetector:
         small = rgb
         if max(h, w) > self.max_side:
             scale = self.max_side / max(h, w)
-            small = cv2.resize(rgb, (round(w * scale), round(h * scale)), interpolation=cv2.INTER_AREA)
+            new_size = (round(w * scale), round(h * scale))
+            small = cv2.resize(rgb, new_size, interpolation=cv2.INTER_AREA)
         boxes, probs = self._mtcnn.detect(Image.fromarray(small))
         if boxes is None:
             return []
@@ -88,9 +89,7 @@ def select_face(
     return (kept[0], None) if kept else (None, reason)
 
 
-def _square_region(
-    rgb: np.ndarray, left: int, top: int, side: int
-) -> tuple[np.ndarray, float]:
+def _square_region(rgb: np.ndarray, left: int, top: int, side: int) -> tuple[np.ndarray, float]:
     """Cut a square, padding with black outside the image. Returns (region, pad_frac)."""
     h, w = rgb.shape[:2]
     right, bottom = left + side, top + side
@@ -111,7 +110,9 @@ def _resize_square(region: np.ndarray, size: int) -> np.ndarray:
     return cv2.resize(region, (size, size), interpolation=interp)
 
 
-def crop_box(box: tuple[float, float, float, float], margin: float = MARGIN) -> tuple[int, int, int]:
+def crop_box(
+    box: tuple[float, float, float, float], margin: float = MARGIN
+) -> tuple[int, int, int]:
     """Square crop (left, top, side) centred on the face box, side = margin * longest edge."""
     x1, y1, x2, y2 = box
     side = max(int(round(max(x2 - x1, y2 - y1) * margin)), 1)

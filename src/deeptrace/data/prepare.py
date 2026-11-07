@@ -105,8 +105,12 @@ def _base_row(item: SourceItem) -> dict[str, Any]:
 
 
 def _skip(item: SourceItem, reason: str, frame_index: int | None = None) -> dict[str, Any]:
-    return {**_base_row(item), "status": "skipped", "reason": reason,
-            "frame_index": "" if frame_index is None else frame_index}
+    return {
+        **_base_row(item),
+        "status": "skipped",
+        "reason": reason,
+        "frame_index": "" if frame_index is None else frame_index,
+    }
 
 
 def process_item(
@@ -139,19 +143,21 @@ def process_item(
             crop_dir.mkdir(parents=True, exist_ok=True)
             dest = crop_dir / _crop_name(item, frame_index)
             dest.write_bytes(crop.jpeg)
-            rows.append({
-                **_base_row(item),
-                "status": "ok",
-                "reason": "",
-                "path": dest.relative_to(out_dir).as_posix(),
-                "phash": to_hex(phash(decode_jpeg(crop.jpeg))),
-                "frame_index": "" if frame_index is None else frame_index,
-                "orig_width": width,
-                "orig_height": height,
-                "jpeg_quality": "" if quality is None else quality,
-                "pad_frac": round(crop.pad_frac, 4),
-                "det_conf": round(crop.face.confidence, 4),
-            })
+            rows.append(
+                {
+                    **_base_row(item),
+                    "status": "ok",
+                    "reason": "",
+                    "path": dest.relative_to(out_dir).as_posix(),
+                    "phash": to_hex(phash(decode_jpeg(crop.jpeg))),
+                    "frame_index": "" if frame_index is None else frame_index,
+                    "orig_width": width,
+                    "orig_height": height,
+                    "jpeg_quality": "" if quality is None else quality,
+                    "pad_frac": round(crop.pad_frac, 4),
+                    "det_conf": round(crop.face.confidence, 4),
+                }
+            )
     except VideoReadError as exc:
         LOG.info("skip %s: %s", item.key, exc)
         rows.append(_skip(item, exc.reason))
@@ -237,7 +243,7 @@ def assign_splits(
         for g in groups:
             sizes[group_stratum[g]][g] += 1
         mapping: dict[str, str] = {}
-        for stratum, gsizes in sorted(sizes.items()):
+        for _stratum, gsizes in sorted(sizes.items()):
             mapping.update(assign_groups(dict(gsizes), cfg.split_fractions, cfg.seed))
         for r, g in zip(drows, groups, strict=True):
             r["split"] = mapping[g]
