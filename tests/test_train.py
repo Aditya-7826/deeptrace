@@ -12,6 +12,7 @@ from deeptrace.data.datasets import balanced_sampler, read_manifest, select_rows
 from deeptrace.models.factory import (
     ModelConfig,
     create_model,
+    head_modules,
     set_backbone_trainable,
     split_parameters,
 )
@@ -160,3 +161,14 @@ def test_two_branch_rgb_fft():
     backbone, head = split_parameters(model)
     assert any(p is model.head.weight for p in head)
     assert all(p is not model.head.weight for p in backbone)
+
+
+@pytest.mark.parametrize(("name", "arch"), [("efficientnet_b0", "timm"), ("resnet18", "timm"),
+                                            ("efficientnet_b0", "rgb_fft")])  # fmt: skip
+def test_logit_head_starts_near_zero(name, arch):
+    model = create_model(ModelConfig(name=name, arch=arch, pretrained=False))
+    heads = [m for h in head_modules(model) for m in h.modules()
+             if isinstance(m, torch.nn.Linear) and m.out_features == 1]  # fmt: skip
+    assert heads
+    for m in heads:
+        assert m.weight.std().item() < 0.02 and torch.all(m.bias == 0)

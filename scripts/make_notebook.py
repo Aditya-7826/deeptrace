@@ -136,6 +136,8 @@ else:
 
 # Only packages Kaggle may lack. torch/torchvision/numpy stay as Kaggle installed them.
 sh(sys.executable, "-m", "pip", "install", "-q", "timm>=1.0", "albumentations>=1.4", "pyyaml")
+if MODE == "evaluate":
+    sh(sys.executable, "-m", "pip", "install", "-q", "grad-cam>=1.5")  # deeptrace explain
 if MODE == "prepare":
     # facenet-pytorch pins old torch; --no-deps keeps Kaggle's torch (MTCNN only needs torch + PIL)
     sh(sys.executable, "-m", "pip", "install", "-q", "--no-deps", "facenet-pytorch>=2.6")

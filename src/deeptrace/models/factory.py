@@ -22,13 +22,30 @@ class ModelConfig:
 def create_model(cfg: ModelConfig) -> nn.Module:
     """Binary classifier with a single-logit head (logit > 0 means fake)."""
     if cfg.arch == "rgb_fft":
-        return RGBFFTNet(cfg.name, pretrained=cfg.pretrained, drop_rate=cfg.drop_rate)
-    if cfg.arch != "timm":
+        model = RGBFFTNet(cfg.name, pretrained=cfg.pretrained, drop_rate=cfg.drop_rate)
+    elif cfg.arch == "timm":
+        kwargs = {"img_size": cfg.img_size} if "vit" in cfg.name else {}
+        model = timm.create_model(
+            cfg.name, pretrained=cfg.pretrained, num_classes=1, drop_rate=cfg.drop_rate, **kwargs
+        )
+    else:
         raise ValueError(f"unknown arch {cfg.arch!r}")
-    kwargs = {"img_size": cfg.img_size} if "vit" in cfg.name else {}
-    return timm.create_model(
-        cfg.name, pretrained=cfg.pretrained, num_classes=1, drop_rate=cfg.drop_rate, **kwargs
-    )
+    init_logit_layers(model)
+    return model
+
+
+def init_logit_layers(model: nn.Module, std: float = 0.01) -> None:
+    """Start every single-logit output layer near zero.
+
+    timm's EfficientNet init draws the classifier from U(-1/sqrt(fan_out), ...), which is
+    U(-1, 1) for one output: over 1280 pretrained features that gives initial logits large
+    enough to push the starting loss to about 8 instead of about 0.7.
+    """
+    for head in head_modules(model):
+        for m in head.modules():
+            if isinstance(m, nn.Linear) and m.out_features == 1:
+                nn.init.normal_(m.weight, std=std)
+                nn.init.zeros_(m.bias)
 
 
 def normalization(model: nn.Module) -> tuple[tuple[float, ...], tuple[float, ...]]:
