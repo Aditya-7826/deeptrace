@@ -102,7 +102,16 @@ async function serviceWorker() {
   for (let i = 0; i < 20; i++) {
     const t = (await targets()).find((x) =>
       x.type === "service_worker" && x.url.endsWith("/background.js"));
-    if (t) return { session: await attach(t.targetId), targetId: t.targetId, url: t.url };
+    if (t) {
+      const session = await attach(t.targetId);
+      // Edge 157+ lists the worker target before background.js has finished running.
+      for (let j = 0; j < 40; j++) {
+        const ready = await evaluate(session, "typeof scanTab === 'function'").catch(() => false);
+        if (ready) return { session, targetId: t.targetId, url: t.url };
+        await sleep(250);
+      }
+      throw new Error("background.js never defined scanTab");
+    }
     await sleep(500);
   }
   throw new Error("extension service worker not found (did the extension load?)");
@@ -120,7 +129,15 @@ async function openPage(url) {
 /** Same code path as clicking the toolbar button (scanTab is the onClicked listener). */
 async function scan(sw, path) {
   const tab = await evaluate(sw.session,
-    `chrome.tabs.query({url: "${SITE}/${path}"}).then((t) => t[0].id)`);
+    `chrome.tabs.query({}).then((ts) => {
+       // Edge 157+ hides tab URLs until the user grants site access to an unpacked
+       // extension; then fall back to the newest tab, which openPage() just created.
+       const t = ts.find((x) => (x.url || x.pendingUrl || "") === "${SITE}/${path}") ||
+         (ts.every((x) => !x.url) ? ts.reduce((a, b) => (b.id > a.id ? b : a)) : undefined);
+       if (!t) throw new Error("tab not found; tabs: " + JSON.stringify(ts.map((x) =>
+         ({ id: x.id, url: x.url, pendingUrl: x.pendingUrl, status: x.status }))));
+       return t.id;
+     })`);
   await evaluate(sw.session, `scanTab({id: ${tab}})`);
 }
 
