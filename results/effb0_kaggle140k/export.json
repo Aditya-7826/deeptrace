@@ -1,0 +1,114 @@
+{
+  "run": "effb0_kaggle140k",
+  "exported_utc": "2026-11-10T11:59:52+00:00",
+  "parity": {
+    "n": 100,
+    "max_abs_diff": 1.8417835235595703e-05,
+    "mean_abs_diff": 1.5506148338317871e-06,
+    "max_abs_logit": 5.479827880859375,
+    "tolerance": 0.0001,
+    "passed": true,
+    "torch_fp32_vs_fp64_max": 7.519692631241526e-06,
+    "onnx_fp32_vs_fp64_max": 1.8248528690811838e-05
+  },
+  "test_set": {
+    "datasets": [
+      "kaggle140k"
+    ],
+    "n": 3998,
+    "auc_onnx_fp32": 0.9988483474837444
+  },
+  "calibration_images": 300,
+  "calibration": {
+    "temperature": 0.6407492368159522,
+    "threshold": 0.540513813495636,
+    "uncertain_band": [
+      0.4,
+      0.6
+    ],
+    "calibrated": true,
+    "source": "/kaggle/working/results/effb0_kaggle140k/metrics.json"
+  },
+  "int8_attempts": [
+    {
+      "name": "per_tensor",
+      "per_channel": false,
+      "exclude": "none",
+      "nodes_excluded": [],
+      "auc_int8": 0.48744118176264895,
+      "auc_drop": 0.5114071657210955,
+      "agreement": 0.49799899949974985,
+      "mean_abs_logit_diff": 4.719961643218994,
+      "accepted": false,
+      "error": null
+    },
+    {
+      "name": "per_channel",
+      "per_channel": true,
+      "exclude": "none",
+      "nodes_excluded": [],
+      "auc_int8": 0.7751713777562896,
+      "auc_drop": 0.22367696972745477,
+      "agreement": 0.6053026513256629,
+      "mean_abs_logit_diff": 2.9953625202178955,
+      "accepted": false,
+      "error": null
+    },
+    {
+      "name": "per_channel_excl_edges",
+      "per_channel": true,
+      "exclude": "edges",
+      "nodes_excluded": [
+        "/classifier/Gemm",
+        "/conv_head/Conv",
+        "/conv_stem/Conv"
+      ],
+      "auc_int8": 0.7959416636198676,
+      "auc_drop": 0.20290668386387678,
+      "agreement": 0.6178089044522261,
+      "mean_abs_logit_diff": 2.8705923557281494,
+      "accepted": false,
+      "error": null
+    },
+    {
+      "name": "per_channel_excl_edges_depthwise",
+      "per_channel": true,
+      "exclude": "edges+depthwise",
+      "nodes_excluded": [
+        "/blocks/blocks.0/blocks.0.0/conv_dw/Conv",
+        "/blocks/blocks.1/blocks.1.0/conv_dw/Conv",
+        "/blocks/blocks.1/blocks.1.1/conv_dw/Conv",
+        "/blocks/blocks.2/blocks.2.0/conv_dw/Conv",
+        "/blocks/blocks.2/blocks.2.1/conv_dw/Conv",
+        "/blocks/blocks.3/blocks.3.0/conv_dw/Conv",
+        "/blocks/blocks.3/blocks.3.1/conv_dw/Conv",
+        "/blocks/blocks.3/blocks.3.2/conv_dw/Conv",
+        "/blocks/blocks.4/blocks.4.0/conv_dw/Conv",
+        "/blocks/blocks.4/blocks.4.1/conv_dw/Conv",
+        "/blocks/blocks.4/blocks.4.2/conv_dw/Conv",
+        "/blocks/blocks.5/blocks.5.0/conv_dw/Conv",
+        "/blocks/blocks.5/blocks.5.1/conv_dw/Conv",
+        "/blocks/blocks.5/blocks.5.2/conv_dw/Conv",
+        "/blocks/blocks.5/blocks.5.3/conv_dw/Conv",
+        "/blocks/blocks.6/blocks.6.0/conv_dw/Conv",
+        "/classifier/Gemm",
+        "/conv_head/Conv",
+        "/conv_stem/Conv"
+      ],
+      "auc_int8": 0.5225156575442874,
+      "auc_drop": 0.476332689939457,
+      "agreement": 0.49799899949974985,
+      "mean_abs_logit_diff": 3.898167371749878,
+      "accepted": false,
+      "error": null
+    }
+  ],
+  "max_auc_drop": 0.01,
+  "serving_model": "model_fp32.onnx",
+  "decision": "every INT8 attempt lost more than 0.01 test AUC (or failed); shipping FP32 ONNX instead",
+  "files_mb": {
+    "model.json": 0.0,
+    "model_fp32.onnx": 16.01,
+    "model_fp32.pt": 16.33
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "measured_utc": "2026-11-10T12:05:57+00:00",
+  "system": {
+    "cpu": "AMD Ryzen 5 5600H with Radeon Graphics",
+    "logical_cores": 12,
+    "physical_cores": 6,
+    "ram_gb": 7.3,
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10"
+  },
+  "model": {
+    "version": "effb0_kaggle140k-33515d1",
+    "serving_model": "model_fp32.onnx"
+  },
+  "server": "deeptrace serve (1 uvicorn worker, 2 inference slots, 2 threads; rate limit lifted for the measurement)",
+  "phases": {
+    "startup": {
+      "rss_mb": 309.8,
+      "seconds": 14.1
+    },
+    "sequential_predict": {
+      "n": 40,
+      "statuses": [
+        200
+      ],
+      "rss_mb": 448.8
+    },
+    "concurrent_predict_4_clients": {
+      "n": 40,
+      "statuses": [
+        200
+      ],
+      "rss_mb": 403.7
+    },
+    "explain_loads_fp32_gradcam": {
+      "n": 4,
+      "statuses": [
+        200
+      ],
+      "rss_mb": 580.7
+    }
+  },
+  "peak_rss_mb": 702.7,
+  "limit_mb": 1500.0,
+  "all_requests_ok": true,
+  "passed": true
+}

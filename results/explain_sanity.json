@@ -1,0 +1,32 @@
+{
+  "runs": {
+    "effb0_kaggle140k": {
+      "run": "effb0_kaggle140k",
+      "model": "efficientnet_b0",
+      "evaluated_utc": "2026-11-10T11:53:47+00:00",
+      "test_images": 200,
+      "target": "fake logit",
+      "randomization_test": {
+        "n": 200,
+        "n_constant_maps": 32,
+        "mean_spearman": 0.12880712531512098,
+        "mean_abs_spearman": 0.2391108026770455,
+        "mean_abs_diff": 0.22498223185539246,
+        "pass_threshold": 0.5,
+        "passed": true
+      },
+      "energy": {
+        "n": 200,
+        "n_empty_maps": 32,
+        "mean_face_share": 0.7812064290046692,
+        "mean_border_share": 0.15099482238292694,
+        "mean_background_share": 0.06779851019382477,
+        "frac_images_mostly_outside_face": 0.08333333333333333,
+        "uniform_map_face_share": 0.5896045918367347,
+        "flag_threshold": 0.5,
+        "flagged_shortcut_risk": false
+      },
+      "note": "Energy shares assume face-crop inputs (1.3x margin); they are not meaningful for the full-frame ablation."
+    }
+  }
+}

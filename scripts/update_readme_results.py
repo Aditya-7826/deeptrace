@@ -197,7 +197,11 @@ def export_line(results: Path, head: str | None) -> str:
         q = (f"INT8 ({a['name']}) accepted: AUC drop {a['auc_drop']:.4f}, "
              f"agreement with FP32 {a['agreement']:.1%}")  # fmt: skip
     else:
-        q = "INT8 rejected by the accuracy gate (AUC drop > 0.01), so FP32 ONNX is served"
+        attempts = exp.get("int8_attempts", [])
+        drops = [a["auc_drop"] for a in attempts if a.get("auc_drop") is not None]
+        best = f"; the best of {len(drops)} attempts lost {min(drops):.2f} AUC" if drops else ""
+        q = (f"INT8 rejected by the accuracy gate (AUC drop > 0.01{best}), "
+             "so FP32 ONNX is served")  # fmt: skip
     return f"- **Export:** {parity}. {q}."
 
 
@@ -264,6 +268,14 @@ def gradcam_section(results: Path, head: str | None, root: Path) -> list[str]:
     if png:
         out += [f'<img src="{_rel(png, root)}" alt="Grad-CAM gallery: correct, wrong and '
                 'uncertain predictions" width="720">', ""]  # fmt: skip
+    elif s:
+        out += [
+            "The example gallery is not committed: the 140k test images include real people "
+            "(FFHQ photos from Flickr). Rebuild it locally with "
+            f"`deeptrace explain --run artifacts/runs/{head} --data-root <crops> "
+            "--gallery gallery.png`.",
+            "",
+        ]
     else:
         out += [f"Gallery: {NYM}.", ""]
     return out

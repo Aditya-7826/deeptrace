@@ -1,0 +1,14 @@
+2026-11-10 11:50:35,570 INFO deeptrace.eval: calibration on 4000 val crops: T=0.641 threshold=0.541
+2026-11-10 11:51:35,482 INFO deeptrace.eval: kaggle140k [in_dataset] n=3998 AUC 0.9988 [0.9981, 0.9995]
+2026-11-10 11:51:44,501 INFO deeptrace.eval: robustness jpeg_quality q90: AUC 0.9941
+2026-11-10 11:51:53,358 INFO deeptrace.eval: robustness jpeg_quality q70: AUC 0.9952
+2026-11-10 11:52:01,965 INFO deeptrace.eval: robustness jpeg_quality q50: AUC 0.9905
+2026-11-10 11:52:10,569 INFO deeptrace.eval: robustness jpeg_quality q30: AUC 0.9834
+2026-11-10 11:52:18,728 INFO deeptrace.eval: robustness downscale x0.75: AUC 0.9968
+2026-11-10 11:52:25,971 INFO deeptrace.eval: robustness downscale x0.5: AUC 0.9937
+2026-11-10 11:52:33,432 INFO deeptrace.eval: robustness downscale x0.25: AUC 0.9606
+2026-11-10 11:52:42,438 INFO deeptrace.eval: robustness gaussian_blur sigma1.0: AUC 0.9926
+2026-11-10 11:52:52,152 INFO deeptrace.eval: robustness gaussian_blur sigma2.0: AUC 0.9560
+2026-11-10 11:53:02,533 INFO deeptrace.eval: robustness gaussian_blur sigma3.0: AUC 0.8200
+2026-11-10 11:53:28,095 INFO deeptrace.eval: robustness screenshot resize0.8+png: AUC 0.9977
+2026-11-10 11:53:35,850 INFO deeptrace.eval: wrote /kaggle/working/results/effb0_kaggle140k/metrics.json

@@ -1,0 +1,83 @@
+{
+  "measured_utc": "2026-11-10T12:04:50+00:00",
+  "system": {
+    "cpu": "AMD Ryzen 5 5600H with Radeon Graphics",
+    "logical_cores": 12,
+    "physical_cores": 6,
+    "ram_gb": 7.3,
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10"
+  },
+  "settings": {
+    "threads": 4,
+    "batch_size": 1,
+    "runs": 200,
+    "warmup": 20,
+    "image": "aldrin.jpg",
+    "image_size_wh": [
+      520,
+      650
+    ],
+    "torch": "2.15.0+cpu",
+    "onnxruntime": "1.31.1"
+  },
+  "model": {
+    "run": "effb0_kaggle140k",
+    "version": "effb0_kaggle140k-33515d1",
+    "name": "efficientnet_b0",
+    "serving_model": "model_fp32.onnx"
+  },
+  "results": [
+    {
+      "model": "pytorch_fp32",
+      "pipeline": "model_only",
+      "runs": 200,
+      "warmup": 20,
+      "load_ms": 8822.9,
+      "p50_ms": 46.43804999795975,
+      "p95_ms": 52.67419000520022,
+      "mean_ms": 46.926252499979455,
+      "min_ms": 37.22140000900254,
+      "peak_rss_mb": 382.6
+    },
+    {
+      "model": "onnx_fp32",
+      "pipeline": "model_only",
+      "runs": 200,
+      "warmup": 20,
+      "load_ms": 343.8,
+      "p50_ms": 9.008300003188197,
+      "p95_ms": 11.356254998099756,
+      "mean_ms": 9.45536950006499,
+      "min_ms": 8.681899998919107,
+      "peak_rss_mb": 111.8
+    },
+    {
+      "model": "pytorch_fp32",
+      "pipeline": "end_to_end",
+      "runs": 200,
+      "warmup": 20,
+      "load_ms": 8254.2,
+      "p50_ms": 209.54739999433514,
+      "p95_ms": 271.32426000316616,
+      "mean_ms": 221.51108449957974,
+      "min_ms": 191.64560000353958,
+      "peak_rss_mb": 417.1
+    },
+    {
+      "model": "onnx_fp32",
+      "pipeline": "end_to_end",
+      "runs": 200,
+      "warmup": 20,
+      "load_ms": 414.8,
+      "p50_ms": 170.34839999541873,
+      "p95_ms": 202.95500500578783,
+      "mean_ms": 172.98045899995486,
+      "min_ms": 146.96439998806454,
+      "peak_rss_mb": 428.1
+    }
+  ],
+  "notes": [
+    "no model_int8.onnx: INT8 was rejected by the accuracy gate (see export.json)"
+  ]
+}

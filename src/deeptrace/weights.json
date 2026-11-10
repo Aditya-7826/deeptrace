@@ -1,5 +1,21 @@
 {
   "repo": "Aditya-7826/deeptrace",
-  "tag": null,
-  "assets": []
+  "tag": "v1.0.0",
+  "assets": [
+    {
+      "name": "model_fp32.onnx",
+      "sha256": "d9bdee7996df4edb215e34c8b838bc5ef4d4c061508a7018c3589b0f4807aa66",
+      "size": 16009989
+    },
+    {
+      "name": "model_fp32.pt",
+      "sha256": "91be0743ced61472f3eb60cd746006b29342494992ab5a016c96a6d46a4fcf42",
+      "size": 16329775
+    },
+    {
+      "name": "model.json",
+      "sha256": "5d8c9901512d4a27b3eab14c7daec017e0ffc0dec1cec55f3bb1f7e62b972b38",
+      "size": 561
+    }
+  ]
 }
