@@ -127,9 +127,13 @@ def test_file_type_comes_from_content_not_name(tmp_path):
     assert app.read_image(str(path)).ndim == 3
 
 
-def test_missing_weights_message_instead_of_crash(tmp_path):
-    error = app.ensure_weights(tmp_path / "weights")  # this code version has no release yet
-    assert error and "could not be downloaded" in error
+def test_missing_weights_message_instead_of_crash(tmp_path, monkeypatch):
+    def offline(*args, **kwargs):
+        raise app.DownloadError("network unreachable")
+
+    monkeypatch.setattr(app, "download_weights", offline)  # never touch the real release
+    error = app.ensure_weights(tmp_path / "weights")
+    assert error and "could not be downloaded" in error and "network unreachable" in error
     d = app.Demo(lambda: Engine(tmp_path / "weights"), startup_error=error)
     with pytest.raises(app.DemoError, match="could not be downloaded"):
         d.analyze(str(IMAGES / "real" / "aldrin.jpg"))
